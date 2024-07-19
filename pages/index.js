@@ -1,13 +1,17 @@
 // pages/index.js
 
-import Signup from '@/Components/Signup';
-import AuthButton from '../components/AuthButton';
+import Signup from '@/components/Signup'; // Ensure correct path and capitalization
+import Inbox from '@/components/inbox';   // Ensure correct path and capitalization
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+
 
 export default function Home() {
+  const { data: session } = useSession();
+
   return (
-<div className='w-screen h-screen flex justify-center'>
-
- <Signup/>
-
-</div>  );
+    <div className='w-screen h-screen flex justify-center'>
+      {!session ? <Signup /> : <Inbox DATA ={session.user.name}/>}
+    </div>
+  );
 }

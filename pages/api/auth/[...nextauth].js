@@ -11,6 +11,14 @@ export default NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+   
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      // Redirect to the homepage or another route
+      return baseUrl;
+    },
     async session({ session, token, user }) {
       session.user.id = token.sub;
       return session;
