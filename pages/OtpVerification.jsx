@@ -6,11 +6,13 @@ function OtpVerification() {
   const { email } = router.query;
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
+let bol  = true
   useEffect(() => {
     const sendOtp = async () => {
       try {
+        localStorage.removeItem('otp')
+        localStorage.removeItem('otpExpires')
+        bol = false;
         const res = await fetch('/api/send-otp', {
           method: 'POST',
           headers: {
@@ -19,38 +21,41 @@ function OtpVerification() {
           body: JSON.stringify({ email }),
         });
 
-        if (res.status !== 200) {
+        if (res.status === 200) {
           const data = await res.json();
-          setError(data.message || "Error sending OTP");
+          localStorage.setItem('otp', data.otp);
+          localStorage.setItem('otpExpires', data.expires);
+          console.log("OTP sent successfully");
         }
       } catch (error) {
-        setError("Error sending OTP");
+        console.log(error);
       } finally {
         setLoading(false);
       }
     };
 
     if (email) {
-      sendOtp();
+     if(bol) sendOtp();
     }
   }, [email]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    const res = await fetch('/api/verify-otp', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, otp }),
-    });
+    const storedOtp = localStorage.getItem('otp');
+    const otpExpires = localStorage.getItem('otpExpires');
 
-    const data = await res.json();
-    if (res.status === 200) {
+    if (Date.now() > otpExpires) {
+      alert("OTP expired");
+      return;
+    }
+
+    if (storedOtp === otp) {
       alert("OTP verified successfully");
+      localStorage.removeItem('otp');
+      localStorage.removeItem('otpExpires');
+      router.push('/Inbox');
     } else {
-      setError(data.message || "OTP verification failed");
+      alert("Invalid OTP");
     }
   };
 
@@ -58,37 +63,30 @@ function OtpVerification() {
     return <div className="text-center text-black">Sending OTP...</div>;
   }
 
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
-  }
-
   return (
-    <>
-      <div className="w-screen h-screen justify-center flex-col flex">
-        <div className="bg-gray-800 text-white shadow-lg w-10/12 h-fit py-6 p-4 self-center rounded-md flex flex-col md:w-8/12 lg:w-3/12">
-          <strong className="text-center py-4 text-2xl">OTP Verification</strong>
-          <form >
-            <input
-              type="number"
-              name="otp"
-              id="otp"
-              placeholder="Enter your OTP here"
-              className="w-11/12 text-sm self-center h-12 mt-3 text-black px-3 placeholder:px-1 rounded-lg placeholder:p-4 focus:ring-indigo-900 md:w-8/12 lg:w-11/12"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              required
-            />
-            <button
-              
-              onClick={handleSubmit}
-              className="text-sm font-bold p-3 text-white bg-blue-800 w-11/12 text-center divWheat rounded-md active:bg-blue-900 active:scale-95 transition-colors duration-100 ease-in-out self-center mt-4 md:w-8/12 lg:w-11/12"
-            >
-              Verify
-            </button>
-          </form>
-        </div>
+    <div className="w-screen h-screen justify-center flex-col flex">
+      <div className="bg-gray-800 text-white shadow-lg w-10/12 h-fit py-6 p-4 self-center rounded-md flex flex-col md:w-8/12 lg:w-3/12">
+        <strong className="text-center py-4 text-2xl">OTP Verification</strong>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="number"
+            name="otp"
+            id="otp"
+            placeholder="Enter your OTP here"
+            className="w-11/12 text-sm self-center h-12 mt-3 text-black px-3 placeholder:px-1 rounded-lg placeholder:p-4 focus:ring-indigo-900 md:w-8/12 lg:w-11/12"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            className="text-sm font-bold p-3 text-white bg-blue-800 w-11/12 text-center divWheat rounded-md active:bg-blue-900 active:scale-95 transition-colors duration-100 ease-in-out self-center mt-4 md:w-8/12 lg:w-11/12"
+          >
+            Verify
+          </button>
+        </form>
       </div>
-    </>
+    </div>
   );
 }
 
