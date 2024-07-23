@@ -2,6 +2,8 @@ import React from "react";
 import { signOut } from "next-auth/react";
 import { GoSignOut } from "react-icons/go";
 import ChatProfile from "./ChatProfile";
+import { AiOutlineWechat } from "react-icons/ai";
+
 const inbox = ({DATA}) => {
   return (
     <>
@@ -14,6 +16,8 @@ const inbox = ({DATA}) => {
      </button>
       </div>
       <ChatProfile/>
+      <AiOutlineWechat  className="text-white md:bottom-2  md:right-[38%]  self-center fixed bottom-4 right-4 text-4xl mr-2 mb-2 active:scale-95 active:text-gray-400" />
+
       </div>
     </div>
     </>
